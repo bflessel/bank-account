@@ -25,4 +25,8 @@ public class DomainAccountService {
     }
     this.balance.add(-amount);
   }
+
+  public Double getBalance() {
+    return this.balance.stream().mapToDouble(Double::valueOf).sum();
+  }
 }
