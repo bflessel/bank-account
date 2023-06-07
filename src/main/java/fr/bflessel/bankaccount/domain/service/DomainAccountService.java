@@ -1,15 +1,21 @@
 package fr.bflessel.bankaccount.domain.service;
 
 import fr.bflessel.bankaccount.domain.exception.DepositException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DomainAccountService {
 
-  private Double balance = 0.0;
+  private final List<Double> balance = new ArrayList<>();
 
   public void deposit(Double amount) throws DepositException {
-    if(amount <0)
+    if (amount <= 0) {
       throw new DepositException("Valeur incorrecte");
-     this.balance = amount;
+    }
+    this.balance.add(amount);
   }
 
+  public int getNumberOfDeposits() {
+    return balance.size();
+  }
 }

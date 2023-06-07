@@ -1,6 +1,8 @@
 package fr.bflessel.bankaccount.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 
 import fr.bflessel.bankaccount.domain.exception.DepositException;
@@ -24,6 +26,8 @@ class DomainAccountServiceTest {
 
     // THEN
     Mockito.verify(domainAccountService, times(1)).deposit(10.0);
+    assertThat(domainAccountService.getNumberOfDeposits()).isEqualTo(1);
+
   }
 
   @Test
@@ -32,5 +36,17 @@ class DomainAccountServiceTest {
     assertThatThrownBy(() -> domainAccountService.deposit(-1.0))
         .isExactlyInstanceOf(DepositException.class)
         .hasMessage("Valeur incorrecte");
+  }
+
+
+  @Test
+  void should_make_2_deposits() throws DepositException {
+    // WHEN
+    domainAccountService.deposit(10.0);
+    domainAccountService.deposit(10.0);
+
+    // THEN
+    Mockito.verify(domainAccountService, times(2)).deposit(any());
+    assertThat(domainAccountService.getNumberOfDeposits()).isEqualTo(2);
   }
 }
