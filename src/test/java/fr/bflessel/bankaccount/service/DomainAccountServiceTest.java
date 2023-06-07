@@ -9,14 +9,14 @@ import fr.bflessel.bankaccount.domain.exception.DepositException;
 import fr.bflessel.bankaccount.domain.service.DomainAccountService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class DomainAccountServiceTest {
-
-  @Spy
+  @InjectMocks
   private DomainAccountService domainAccountService;
 
   @Test
@@ -25,7 +25,6 @@ class DomainAccountServiceTest {
     domainAccountService.deposit(10.0);
 
     // THEN
-    Mockito.verify(domainAccountService, times(1)).deposit(10.0);
     assertThat(domainAccountService.getNumberOfDeposits()).isEqualTo(1);
 
   }
@@ -46,7 +45,33 @@ class DomainAccountServiceTest {
     domainAccountService.deposit(10.0);
 
     // THEN
-    Mockito.verify(domainAccountService, times(2)).deposit(any());
+    assertThat(domainAccountService.getNumberOfDeposits()).isEqualTo(2);
+  }
+  @Test
+  void should_make_one_withdrawal() throws DepositException {
+    // WHEN
+    domainAccountService.withdraw(10.0);
+
+    // THEN
+    assertThat(domainAccountService.getNumberOfDeposits()).isEqualTo(1);
+  }
+
+  @Test
+  void should_make_a_negative_withdrawal() {
+    // WHEN + THEN
+    assertThatThrownBy(() -> domainAccountService.withdraw(-1.0))
+        .isExactlyInstanceOf(DepositException.class)
+        .hasMessage("Valeur incorrecte");
+  }
+
+
+  @Test
+  void should_make_2_withdrawals() throws DepositException {
+    // WHEN
+    domainAccountService.withdraw(10.0);
+    domainAccountService.withdraw(10.0);
+
+    // THEN
     assertThat(domainAccountService.getNumberOfDeposits()).isEqualTo(2);
   }
 }

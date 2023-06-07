@@ -18,4 +18,11 @@ public class DomainAccountService {
   public int getNumberOfDeposits() {
     return balance.size();
   }
+
+  public void withdraw(double amount) throws DepositException {
+    if (amount <= 0) {
+      throw new DepositException("Valeur incorrecte");
+    }
+    this.balance.add(-amount);
+  }
 }
