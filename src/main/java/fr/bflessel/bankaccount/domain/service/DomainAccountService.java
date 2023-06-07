@@ -1,32 +1,52 @@
 package fr.bflessel.bankaccount.domain.service;
 
-import fr.bflessel.bankaccount.domain.exception.DepositException;
+import fr.bflessel.bankaccount.domain.exception.OperationException;
+import fr.bflessel.bankaccount.domain.model.OperationType;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class DomainAccountService {
 
-  private final List<Double> balance = new ArrayList<>();
+  private final List<OperationHistory> history = new ArrayList<>();
+  private Double balance = 0.0;
 
-  public void deposit(Double amount) throws DepositException {
+  public void deposit(Double amount) throws OperationException {
     if (amount <= 0) {
-      throw new DepositException("Valeur incorrecte");
+      throw new OperationException("Valeur incorrecte");
     }
-    this.balance.add(amount);
+    this.balance += amount;
+    this.history.add(new OperationHistoryBuilder()
+        .setType(OperationType.DEPOSIT)
+        .setCalendar(Calendar.getInstance())
+        .setAmount(amount)
+        .setBalance(this.balance)
+        .createOperationHistory());
   }
 
   public int getNumberOfDeposits() {
-    return balance.size();
+    return history.size();
   }
 
-  public void withdraw(double amount) throws DepositException {
+  public void withdraw(double amount) throws OperationException {
     if (amount <= 0) {
-      throw new DepositException("Valeur incorrecte");
+      throw new OperationException("Valeur incorrecte");
     }
-    this.balance.add(-amount);
+
+    this.balance -= amount;
+    this.history.add(new OperationHistoryBuilder()
+        .setType(OperationType.WITHDRAWAL)
+        .setCalendar(Calendar.getInstance())
+        .setAmount(amount)
+        .setBalance(this.balance)
+        .createOperationHistory());
   }
 
   public Double getBalance() {
-    return this.balance.stream().mapToDouble(Double::valueOf).sum();
+    return this.balance;
+  }
+
+  public List<OperationHistory> getHistory() {
+    return history;
   }
 }
