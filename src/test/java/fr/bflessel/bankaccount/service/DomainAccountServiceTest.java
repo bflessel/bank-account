@@ -5,15 +5,20 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import fr.bflessel.bankaccount.domain.exception.OperationException;
 import fr.bflessel.bankaccount.domain.model.OperationType;
+import fr.bflessel.bankaccount.domain.model.Sum;
 import fr.bflessel.bankaccount.domain.service.DomainAccountService;
-import fr.bflessel.bankaccount.domain.service.OperationHistory;
-import fr.bflessel.bankaccount.domain.service.OperationHistoryBuilder;
+import fr.bflessel.bankaccount.domain.service.impl.model.OperationHistory;
+import fr.bflessel.bankaccount.domain.service.impl.model.OperationHistoryBuilder;
 import java.util.Calendar;
 import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -25,6 +30,22 @@ class DomainAccountServiceTest {
   private static MockedStatic<Calendar> mockCalendar;
   @InjectMocks
   private DomainAccountService domainAccountService;
+
+  private static Stream<Arguments> sumValues() {
+    return Stream.of(
+        Arguments.of(10.0, 50.0, 80.0, 0.0),
+        Arguments.of(5000.0, 12.5, 17.8, 250.0),
+        Arguments.of(10.0, 2000.0, 90.0, -200.0)
+    );
+  }
+
+  private static Stream<Arguments> wrongValues() {
+    return Stream.of(
+        Arguments.of(-1000.0),
+        Arguments.of(0.0),
+        Arguments.of(-2.0)
+    );
+  }
 
   @BeforeEach
   private void init() {
@@ -40,105 +61,84 @@ class DomainAccountServiceTest {
     mockCalendar.close();
   }
 
-  @Test
-  void should_make_one_deposit() throws OperationException {
+  @ParameterizedTest
+  @MethodSource("sumValues")
+  void should_make_one_deposit(Double deposit) throws OperationException {
     // WHEN
-    domainAccountService.deposit(10.0);
+    domainAccountService.deposit(Sum.of(deposit));
 
     // THEN
-    assertThat(domainAccountService.getNumberOfDeposits()).isEqualTo(1);
-
+    assertThat(domainAccountService.getBalance()).isEqualTo(Sum.of(deposit));
   }
 
-  @Test
-  void should_make_a_negative_deposits() {
+  @ParameterizedTest
+  @MethodSource("wrongValues")
+  void should_make_a_negative_deposits(Double value) {
     // WHEN + THEN
-    assertThatThrownBy(() -> domainAccountService.deposit(-1.0))
+    assertThatThrownBy(() -> domainAccountService.deposit(Sum.of(value)))
         .isExactlyInstanceOf(OperationException.class)
-        .hasMessage("Valeur incorrecte");
+        .hasMessage("Error while making a deposit : Can't make a negative operation as " + value);
   }
 
-
-  @Test
-  void should_make_2_deposits() throws OperationException {
+  @ParameterizedTest
+  @MethodSource("sumValues")
+  void should_make_several_deposits(Double first, Double second, Double third, Double baseValue) throws OperationException {
     // WHEN
-    domainAccountService.deposit(10.0);
-    domainAccountService.deposit(10.0);
+    domainAccountService.setBalance(baseValue);
+    domainAccountService.deposit(Sum.of(first));
+    domainAccountService.deposit(Sum.of(second));
+    domainAccountService.deposit(Sum.of(third));
+    // THEN
+    assertThat(domainAccountService.getHistory()).hasSize(3);
+    assertThat(domainAccountService.getBalance()).isEqualTo(Sum.of(baseValue + first + second + third));
+  }
+
+  @ParameterizedTest
+  @MethodSource("sumValues")
+  void should_make_one_withdrawal(Double withdrawal) throws OperationException {
+    // WHEN
+    domainAccountService.withdraw(Sum.of(withdrawal));
 
     // THEN
-    assertThat(domainAccountService.getNumberOfDeposits()).isEqualTo(2);
+    assertThat(domainAccountService.getHistory()).hasSize(1);
+    assertThat(domainAccountService.getBalance()).isEqualTo(Sum.of(-withdrawal));
   }
 
-  @Test
-  void should_make_one_withdrawal() throws OperationException {
-    // WHEN
-    domainAccountService.withdraw(10.0);
-
-    // THEN
-    assertThat(domainAccountService.getNumberOfDeposits()).isEqualTo(1);
-  }
-
-  @Test
-  void should_make_a_negative_withdrawal() {
+  @ParameterizedTest
+  @MethodSource("wrongValues")
+  void should_make_a_negative_withdrawal(Double value) {
     // WHEN + THEN
-    assertThatThrownBy(() -> domainAccountService.withdraw(-1.0))
+    assertThatThrownBy(() -> domainAccountService.withdraw(Sum.of(value)))
         .isExactlyInstanceOf(OperationException.class)
-        .hasMessage("Valeur incorrecte");
+        .hasMessage("Error while making a withdrawal : Can't make a negative operation as " + value);
   }
 
-
-  @Test
-  void should_make_2_withdrawals() throws OperationException {
+  @ParameterizedTest
+  @MethodSource("sumValues")
+  void should_make_several_withdrawals(Double first, Double second, Double third, Double baseValue) throws OperationException {
     // WHEN
-    domainAccountService.withdraw(10.0);
-    domainAccountService.withdraw(10.0);
-
+    domainAccountService.setBalance(baseValue);
+    domainAccountService.withdraw(Sum.of(first));
+    domainAccountService.withdraw(Sum.of(second));
+    domainAccountService.withdraw(Sum.of(third));
     // THEN
-    assertThat(domainAccountService.getNumberOfDeposits()).isEqualTo(2);
-  }
-
-  @Test
-  void should_getBalance_for_one_deposit() throws OperationException {
-    // WHEN
-    domainAccountService.deposit(10.0);
-
-    // THEN
-    assertThat(domainAccountService.getBalance()).isEqualTo(10.0);
-  }
-
-  @Test
-  void should_getBalance_for_two_deposit() throws OperationException {
-    // WHEN
-    domainAccountService.deposit(10.0);
-    domainAccountService.deposit(20.0);
-
-    // THEN
-    assertThat(domainAccountService.getBalance()).isEqualTo(30.0);
-  }
-
-  @Test
-  void should_getBalance_for_one_withdrawals() throws OperationException {
-    // WHEN
-    domainAccountService.withdraw(10.0);
-
-    // THEN
-    assertThat(domainAccountService.getNumberOfDeposits()).isEqualTo(1);
-    assertThat(domainAccountService.getBalance()).isEqualTo(-10.0);
+    assertThat(domainAccountService.getHistory()).hasSize(3);
+    assertThat(domainAccountService.getBalance()).isEqualTo(Sum.of(baseValue - first - second - third));
   }
 
   @Test
   void should_getBalance_for_operations() throws OperationException {
     // WHEN
-    domainAccountService.withdraw(8.0);
-    domainAccountService.deposit(100.0);
-    domainAccountService.withdraw(410.0);
-    domainAccountService.deposit(210.0);
-    domainAccountService.withdraw(1120.0);
-    domainAccountService.deposit(1550.0);
+    domainAccountService.withdraw(Sum.of(8.0));
+    domainAccountService.deposit(Sum.of(100.0));
+    domainAccountService.withdraw(Sum.of(410.0));
+    domainAccountService.deposit(Sum.of(210.0));
+    domainAccountService.withdraw(Sum.of(1120.0));
+    domainAccountService.deposit(Sum.of(1550.0));
 
     // THEN
-    assertThat(domainAccountService.getNumberOfDeposits()).isEqualTo(6);
-    assertThat(domainAccountService.getBalance()).isEqualTo(322.0);
+    assertThat(domainAccountService.getHistory()).hasSize(6);
+    assertThat(domainAccountService.getBalance()).isEqualTo(Sum.of(322.0));
   }
 
   @Test
@@ -152,12 +152,12 @@ class DomainAccountServiceTest {
         .createOperationHistory();
 
     // WHEN
-    domainAccountService.withdraw(8.0);
+    domainAccountService.withdraw(Sum.of(8.0));
 
     // THEN
     List<OperationHistory> histories = domainAccountService.getHistory();
     assertThat(histories).isEqualTo(List.of(history));
-    assertThat(domainAccountService.getBalance()).isEqualTo(-8.0);
+    assertThat(domainAccountService.getBalance()).isEqualTo(Sum.of(-8.0));
   }
 
   @Test
@@ -171,13 +171,13 @@ class DomainAccountServiceTest {
         .createOperationHistory();
 
     // WHEN
-    domainAccountService.deposit(8.0);
+    domainAccountService.deposit(Sum.of(8.0));
+
     // THEN
     List<OperationHistory> histories = domainAccountService.getHistory();
     assertThat(histories).isEqualTo(List.of(history));
-    assertThat(domainAccountService.getBalance()).isEqualTo(8.0);
+    assertThat(domainAccountService.getBalance()).isEqualTo(Sum.of(8.0));
   }
-
 
   @Test
   void should_get_history_for_operations() throws OperationException {
@@ -210,15 +210,15 @@ class DomainAccountServiceTest {
     );
 
     // WHEN
-    domainAccountService.deposit(8.0);
-    domainAccountService.deposit(8.0);
-    domainAccountService.deposit(8.0);
-    domainAccountService.withdraw(10.0);
+    domainAccountService.deposit(Sum.of(8.0));
+    domainAccountService.deposit(Sum.of(8.0));
+    domainAccountService.deposit(Sum.of(8.0));
+    domainAccountService.withdraw(Sum.of(10.0));
 
     // THEN
     List<OperationHistory> histories = domainAccountService.getHistory();
     assertThat(histories).usingRecursiveComparison().isEqualTo(history);
-    assertThat(domainAccountService.getBalance()).isEqualTo(14.0);
+    assertThat(domainAccountService.getBalance()).isEqualTo(Sum.of(14.0));
   }
 
 }
