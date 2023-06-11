@@ -1,4 +1,4 @@
-package fr.bflessel.bankaccount.application;
+package fr.bflessel.bankaccount.application.config;
 
 import fr.bflessel.bankaccount.domain.service.AccountService;
 import fr.bflessel.bankaccount.domain.service.DomainAccountService;
