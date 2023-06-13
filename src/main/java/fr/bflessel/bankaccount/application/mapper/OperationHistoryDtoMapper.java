@@ -15,7 +15,7 @@ public class OperationHistoryDtoMapper {
             operationHistory -> new OperationHistoryDTOBuilder()
                 .setAmount(operationHistory.amount())
                 .setBalance(operationHistory.balance())
-                .setCalendar(operationHistory.calendar())
+                .setDate(operationHistory.date())
                 .setType(operationHistory.type()).createOperationHistoryDTO()
         )
         .toList();

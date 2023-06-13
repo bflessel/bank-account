@@ -9,6 +9,7 @@ import fr.bflessel.bankaccount.domain.model.Sum;
 import fr.bflessel.bankaccount.domain.service.DomainAccountService;
 import fr.bflessel.bankaccount.domain.service.impl.model.OperationHistory;
 import fr.bflessel.bankaccount.domain.service.impl.model.OperationHistoryBuilder;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Stream;
@@ -146,7 +147,7 @@ class DomainAccountServiceTest {
     // GIVEN
     OperationHistory history = new OperationHistoryBuilder()
         .setType(OperationType.WITHDRAWAL)
-        .setCalendar(Calendar.getInstance())
+        .setDate(LocalDateTime.now())
         .setAmount(8.0)
         .setBalance(-8.0)
         .createOperationHistory();
@@ -165,7 +166,7 @@ class DomainAccountServiceTest {
     // GIVEN
     OperationHistory history = new OperationHistoryBuilder()
         .setType(OperationType.DEPOSIT)
-        .setCalendar(Calendar.getInstance())
+        .setDate(LocalDateTime.now())
         .setAmount(8.0)
         .setBalance(8.0)
         .createOperationHistory();
@@ -185,25 +186,25 @@ class DomainAccountServiceTest {
     List<OperationHistory> history = List.of(
         new OperationHistoryBuilder()
             .setType(OperationType.DEPOSIT)
-            .setCalendar(Calendar.getInstance())
+            .setDate(LocalDateTime.now())
             .setAmount(8.0)
             .setBalance(8.0)
             .createOperationHistory(),
         new OperationHistoryBuilder()
             .setType(OperationType.DEPOSIT)
-            .setCalendar(Calendar.getInstance())
+            .setDate(LocalDateTime.now())
             .setAmount(8.0)
             .setBalance(16.0)
             .createOperationHistory(),
         new OperationHistoryBuilder()
             .setType(OperationType.DEPOSIT)
-            .setCalendar(Calendar.getInstance())
+            .setDate(LocalDateTime.now())
             .setAmount(8.0)
             .setBalance(24.0)
             .createOperationHistory(),
         new OperationHistoryBuilder()
             .setType(OperationType.WITHDRAWAL)
-            .setCalendar(Calendar.getInstance())
+            .setDate(LocalDateTime.now())
             .setAmount(10.0)
             .setBalance(14.0)
             .createOperationHistory()

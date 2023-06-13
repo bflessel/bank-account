@@ -2,17 +2,17 @@ package fr.bflessel.bankaccount.domain.model.dto.output.builder;
 
 import fr.bflessel.bankaccount.domain.model.OperationType;
 import fr.bflessel.bankaccount.domain.model.dto.output.OperationHistoryDTO;
-import java.util.Calendar;
+import java.time.LocalDateTime;
 
 public class OperationHistoryDTOBuilder {
 
-  private Calendar calendar;
+  private LocalDateTime date;
   private OperationType type;
   private Double amount;
   private Double balance;
 
-  public OperationHistoryDTOBuilder setCalendar(Calendar calendar) {
-    this.calendar = calendar;
+  public OperationHistoryDTOBuilder setDate(LocalDateTime date) {
+    this.date = date;
     return this;
   }
 
@@ -31,7 +31,7 @@ public class OperationHistoryDTOBuilder {
   }
 
   public OperationHistoryDTO createOperationHistoryDTO() {
-    return new OperationHistoryDTO(calendar, type, amount, balance);
+    return new OperationHistoryDTO(date, type, amount, balance);
   }
 
 }

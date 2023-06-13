@@ -16,6 +16,7 @@ import fr.bflessel.bankaccount.domain.model.dto.output.builder.OperationHistoryD
 import fr.bflessel.bankaccount.domain.service.DomainAccountService;
 import fr.bflessel.bankaccount.domain.service.impl.model.OperationHistory;
 import fr.bflessel.bankaccount.domain.service.impl.model.OperationHistoryBuilder;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,19 +81,18 @@ class BankControllerTest {
 
   @Test
   void getHistory() {
-    Calendar calendar = Calendar.getInstance();
 
     List<OperationHistoryDTO> historyDTO = List.of(
-        getHistoryDTO(OperationType.DEPOSIT, calendar, 8.0, 8.0),
-        getHistoryDTO(OperationType.DEPOSIT, calendar, 8.0, 16.0),
-        getHistoryDTO(OperationType.DEPOSIT, calendar, 8.0, 24.0),
-        getHistoryDTO(OperationType.WITHDRAWAL, calendar, 10.0, 14.0)
+        getHistoryDTO(OperationType.DEPOSIT, LocalDateTime.now(), 8.0, 8.0),
+        getHistoryDTO(OperationType.DEPOSIT, LocalDateTime.now(), 8.0, 16.0),
+        getHistoryDTO(OperationType.DEPOSIT, LocalDateTime.now(), 8.0, 24.0),
+        getHistoryDTO(OperationType.WITHDRAWAL, LocalDateTime.now(), 10.0, 14.0)
     );
     List<OperationHistory> history = List.of(
-        getOperationHistory(OperationType.DEPOSIT, calendar, 8.0, 8.0),
-        getOperationHistory(OperationType.DEPOSIT, calendar, 8.0, 16.0),
-        getOperationHistory(OperationType.DEPOSIT, calendar, 8.0, 24.0),
-        getOperationHistory(OperationType.WITHDRAWAL, calendar, 10.0, 14.0)
+        getOperationHistory(OperationType.DEPOSIT, LocalDateTime.now(), 8.0, 8.0),
+        getOperationHistory(OperationType.DEPOSIT, LocalDateTime.now(), 8.0, 16.0),
+        getOperationHistory(OperationType.DEPOSIT, LocalDateTime.now(), 8.0, 24.0),
+        getOperationHistory(OperationType.WITHDRAWAL, LocalDateTime.now(), 10.0, 14.0)
     );
     when(accountService.getHistory()).thenReturn(history);
     // GIVEN + WHEN + THEN
@@ -102,19 +102,19 @@ class BankControllerTest {
     verify(accountService).getHistory();
   }
 
-  private OperationHistoryDTO getHistoryDTO(OperationType withdrawal, Calendar calendar, double amount, double balance) {
+  private OperationHistoryDTO getHistoryDTO(OperationType withdrawal, LocalDateTime localDateTime, double amount, double balance) {
     return new OperationHistoryDTOBuilder()
         .setType(withdrawal)
-        .setCalendar(calendar)
+        .setDate(localDateTime)
         .setAmount(amount)
         .setBalance(balance)
         .createOperationHistoryDTO();
   }
 
-  private OperationHistory getOperationHistory(OperationType deposit, Calendar calendar, double amount, double amount1) {
+  private OperationHistory getOperationHistory(OperationType deposit, LocalDateTime localDateTime, double amount, double amount1) {
     return new OperationHistoryBuilder()
         .setType(deposit)
-        .setCalendar(calendar)
+        .setDate(localDateTime)
         .setAmount(amount)
         .setBalance(amount1)
         .createOperationHistory();

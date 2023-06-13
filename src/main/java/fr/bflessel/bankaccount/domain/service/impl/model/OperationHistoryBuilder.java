@@ -1,17 +1,17 @@
 package fr.bflessel.bankaccount.domain.service.impl.model;
 
 import fr.bflessel.bankaccount.domain.model.OperationType;
-import java.util.Calendar;
+import java.time.LocalDateTime;
 
 public class OperationHistoryBuilder {
 
-  private Calendar calendar;
+  private LocalDateTime date;
   private OperationType type;
   private Double amount;
   private Double balance;
 
-  public OperationHistoryBuilder setCalendar(Calendar calendar) {
-    this.calendar = calendar;
+  public OperationHistoryBuilder setDate(LocalDateTime date) {
+    this.date = date;
     return this;
   }
 
@@ -24,13 +24,14 @@ public class OperationHistoryBuilder {
     this.amount = amount;
     return this;
   }
+
   public OperationHistoryBuilder setBalance(Double balance) {
     this.balance = balance;
     return this;
   }
 
   public OperationHistory createOperationHistory() {
-    return new OperationHistory(calendar, type, amount, balance);
+    return new OperationHistory(date, type, amount, balance);
   }
 
 }
